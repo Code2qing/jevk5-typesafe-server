@@ -110,10 +110,11 @@ uv run python run.py --llama-url http://127.0.0.1:8080 --port 8000
 项目内置了完整的 Docker Compose 编排方案，包含 `llama-server`（自动从 HuggingFace 拉取 GGUF 权重）与 `jevk5-typesafe-server` 双容器联动：
 
 ```bash
-# 1. 复制配置文件（可选，默认自带完备开箱配置）
+# 1. 复制配置文件与 Docker Compose 模板
 cp .env.example .env
+cp docker-compose.example.yml docker-compose.yml
 
-# 2. 一键启动后端 llama-server 和 API 服务
+# 2. 一键启动后端 llama-server 和 API 服务（llama-server 默认包含 -ngl 99 GPU 全层卸载）
 docker compose up -d
 
 # 3. 查看运行日志

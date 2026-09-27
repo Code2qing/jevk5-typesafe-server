@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 import uvicorn
 
 from jevk5_server.app import create_app
 from jevk5_server.config import Settings
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("jevk5_server")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -96,12 +103,13 @@ def main(argv: list[str] | None = None) -> int:
     settings = build_settings(args)
     app = create_app(settings=settings)
 
-    print(
-        f"Starting JevK5 TypeSafe API Server on http://{settings.host}:{settings.port}",
-        flush=True,
+    logger.info(
+        "Starting JevK5 TypeSafe API Server on http://%s:%s",
+        settings.host,
+        settings.port,
     )
-    print(f"Connecting to llama-server at {settings.llama_server_url}", flush=True)
-    print(f"Serving model: {settings.model_name}", flush=True)
+    logger.info("Connecting to llama-server at %s", settings.llama_server_url)
+    logger.info("Serving model: %s", settings.model_name)
 
     uvicorn.run(app, host=settings.host, port=settings.port, reload=args.reload)
     return 0
