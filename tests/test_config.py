@@ -54,3 +54,22 @@ def test_settings_reads_from_dotenv(tmp_path, monkeypatch):
     assert settings.port == 7777
     assert settings.api_key == "env-secret-key"
 
+
+def test_system_env_overrides_dotenv(tmp_path, monkeypatch):
+    # .env 文件配置
+    env_file = tmp_path / ".env"
+    env_file.write_text("LLAMA_SERVER_URL=http://from-dotenv:8888\nPORT=7777\n")
+
+    monkeypatch.chdir(tmp_path)
+
+    # 系统环境变量显式设置不同的值
+    monkeypatch.setenv("LLAMA_SERVER_URL", "http://from-system-env:9999")
+    monkeypatch.delenv("PORT", raising=False)
+
+    settings = Settings()
+    # LLAMA_SERVER_URL 优先采用系统环境变量
+    assert settings.llama_server_url == "http://from-system-env:9999"
+    # 未被系统环境变量覆盖的 PORT 继续采用 .env 中的值
+    assert settings.port == 7777
+
+
