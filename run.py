@@ -16,47 +16,47 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--host",
-        default="0.0.0.0",
-        help="Host interface to bind (default: 0.0.0.0)",
+        default=None,
+        help="Host interface to bind (default: $HOST or 0.0.0.0)",
     )
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port to listen on (default: 8000)",
+        default=None,
+        help="Port to listen on (default: $PORT or 8000)",
     )
     parser.add_argument(
         "--llama-url",
-        default="http://127.0.0.1:8080",
-        help="llama-server HTTP base URL (default: http://127.0.0.1:8080)",
+        default=None,
+        help="llama-server HTTP base URL (default: $LLAMA_SERVER_URL or http://127.0.0.1:8080)",
     )
     parser.add_argument(
         "--model",
-        default="jevk5-4b-v0.3-Q8_0",
-        help="Model name or alias to advertise (default: jevk5-4b-v0.3-Q8_0)",
+        default=None,
+        help="Model name or alias to advertise (default: $MODEL_NAME or jevk5-4b-v0.3-Q8_0)",
     )
     parser.add_argument(
         "--temperature",
         type=float,
-        default=1.22,
-        help="Calibration temperature for options <= 16 (default: 1.22)",
+        default=None,
+        help="Calibration temperature for options <= 16 (default: $TEMPERATURE or 1.22)",
     )
     parser.add_argument(
         "--knockout-temperature",
         type=float,
-        default=0.93,
-        help="Knockout tournament temperature for options > 16 (default: 0.93)",
+        default=None,
+        help="Knockout tournament temperature for options > 16 (default: $KNOCKOUT_TEMPERATURE or 0.93)",
     )
     parser.add_argument(
         "--top-k",
         type=int,
-        default=40,
-        help="Top-K logprobs requested from llama-server (default: 40)",
+        default=None,
+        help="Top-K logprobs requested from llama-server (default: $TOP_K or 40)",
     )
     parser.add_argument(
         "--api-key",
         default=None,
-        help="Optional API key required for Bearer authentication",
+        help="Optional API key required for Bearer authentication (default: $API_KEY)",
     )
     parser.add_argument(
         "--reload",
@@ -66,18 +66,34 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def build_settings(args: argparse.Namespace) -> Settings:
+    """Build Settings respecting priority: CLI Arguments > Environment Variables > Defaults."""
+    # Settings() automatically pulls from environment variables (os.getenv) with built-in defaults
+    settings = Settings()
+
+    if args.host is not None:
+        settings.host = args.host
+    if args.port is not None:
+        settings.port = args.port
+    if args.llama_url is not None:
+        settings.llama_server_url = args.llama_url.rstrip("/")
+    if args.model is not None:
+        settings.model_name = args.model
+    if args.temperature is not None:
+        settings.temperature = args.temperature
+    if args.knockout_temperature is not None:
+        settings.knockout_temperature = args.knockout_temperature
+    if args.top_k is not None:
+        settings.top_k = args.top_k
+    if args.api_key is not None:
+        settings.api_key = args.api_key
+
+    return settings
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    settings = Settings(
-        host=args.host,
-        port=args.port,
-        llama_server_url=args.llama_url,
-        model_name=args.model,
-        temperature=args.temperature,
-        knockout_temperature=args.knockout_temperature,
-        top_k=args.top_k,
-        api_key=args.api_key,
-    )
+    settings = build_settings(args)
     app = create_app(settings=settings)
 
     print(
