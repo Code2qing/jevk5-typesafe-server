@@ -121,8 +121,8 @@ docker compose up -d
 docker compose logs -f
 ```
 
-- API 服务端口：`http://localhost:8000`
-- llama-server 后端端口：`http://localhost:8080`
+- API 服务端口：`http://localhost:8000`（容器内自动加载 `.env` 中的全部配置，如 `API_KEY`、`TEMPERATURE` 等）
+- llama-server 后端端口：`http://localhost:8080`（支持通过 `.env` 中的 `HF_REPO`、`HF_FILE`、`NGL` 灵活调整模型与 GPU 层数）
 - HuggingFace 模型权重自动持久化挂载在数据卷 `jevk5-huggingface-cache` 中，避免重复下载。
 
 ---
