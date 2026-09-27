@@ -37,8 +37,10 @@ services:
     environment:
       # Override LLAMA_SERVER_URL to use the internal Docker container name instead of localhost
       - LLAMA_SERVER_URL=http://llama-server:8080
+      # Keep container-internal port fixed to 8000 (matching Dockerfile EXPOSE & HEALTHCHECK)
+      - PORT=8000
     ports:
-      - "${PORT:-8000}:8000"
+      - "${HOST_PORT:-8000}:8000"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 15s
