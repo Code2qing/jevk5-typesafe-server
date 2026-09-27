@@ -27,5 +27,6 @@ build/
 *.swp
 *.swo
 
-# Environment variables
+# Environment variables & local deployments
 .env
+docker-compose.yml

@@ -2,38 +2,58 @@
 
 from __future__ import annotations
 
-import os
-from pydantic import BaseModel, Field
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseModel):
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
     llama_server_url: str = Field(
-        default_factory=lambda: os.getenv("LLAMA_SERVER_URL", "http://127.0.0.1:8080").rstrip("/")
+        default="http://127.0.0.1:8080",
+        description="Base URL of the running llama-server instance.",
     )
     model_name: str = Field(
-        default_factory=lambda: os.getenv("MODEL_NAME", "jevk5-4b-v0.3-Q8_0")
+        default="jevk5-4b-v0.3-Q8_0",
+        description="Advertised model identifier.",
     )
     temperature: float = Field(
-        default_factory=lambda: float(os.getenv("TEMPERATURE", "1.22"))
+        default=1.22,
+        description="Temperature for options <= 16.",
     )
     knockout_temperature: float = Field(
-        default_factory=lambda: float(os.getenv("KNOCKOUT_TEMPERATURE", "0.93"))
+        default=0.93,
+        description="Knockout tournament temperature for options > 16.",
     )
     top_k: int = Field(
-        default_factory=lambda: int(os.getenv("TOP_K", "40"))
+        default=40,
+        description="Number of top logprobs to request from llama-server.",
     )
     timeout_s: float = Field(
-        default_factory=lambda: float(os.getenv("TIMEOUT_S", "120.0"))
+        default=120.0,
+        description="HTTP request timeout in seconds.",
     )
     api_key: str | None = Field(
-        default_factory=lambda: os.getenv("API_KEY")
+        default=None,
+        description="Optional API key for Bearer authentication.",
     )
     host: str = Field(
-        default_factory=lambda: os.getenv("HOST", "0.0.0.0")
+        default="0.0.0.0",
+        description="Server bind host.",
     )
     port: int = Field(
-        default_factory=lambda: int(os.getenv("PORT", "8000"))
+        default=8000,
+        description="Server bind port.",
     )
+
+    @field_validator("llama_server_url")
+    @classmethod
+    def clean_url(cls, v: str) -> str:
+        return v.rstrip("/")
 
 
 settings = Settings()
