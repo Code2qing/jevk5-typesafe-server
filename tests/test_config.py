@@ -34,3 +34,23 @@ def test_default_used_when_neither_env_nor_cli_provided(monkeypatch):
     settings = build_settings(args)
 
     assert settings.llama_server_url == "http://127.0.0.1:8080"
+
+
+def test_settings_reads_from_dotenv(tmp_path, monkeypatch):
+    # Create a temporary .env file
+    env_file = tmp_path / ".env"
+    env_file.write_text("LLAMA_SERVER_URL=http://from-dotenv:8888\nPORT=7777\nAPI_KEY=env-secret-key\n")
+
+    # Clear any environment variables that might interfere
+    monkeypatch.delenv("LLAMA_SERVER_URL", raising=False)
+    monkeypatch.delenv("PORT", raising=False)
+    monkeypatch.delenv("API_KEY", raising=False)
+
+    # Change directory to tmp_path where .env resides
+    monkeypatch.chdir(tmp_path)
+
+    settings = Settings()
+    assert settings.llama_server_url == "http://from-dotenv:8888"
+    assert settings.port == 7777
+    assert settings.api_key == "env-secret-key"
+
